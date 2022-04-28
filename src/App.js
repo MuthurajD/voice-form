@@ -10,15 +10,12 @@ export default function App() {
 		<VoiceForm>
 			<form>
 				<div>
-					<input name="name" value={title} onChange={setTitle} />
-					<br />
+					<input name="name" speak={"Please tell your name"} value={title} onChange={setTitle} />
 				</div>
 				<div>
-					<input
-						name="description"
-						value={description}
-						onChange={setDescription}
-					/>
+					<div>
+						<input name="name" speak={"Please fill the description"} value={description} onChange={setDescription}></input>
+					</div>
 				</div>
 			</form>
 		</VoiceForm>
