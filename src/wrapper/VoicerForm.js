@@ -57,11 +57,10 @@ export default function VoiceForm(props) {
 	},[currentNodesResolvedCount,enabled]);
 
 	return (
-	<div>
-		<button onClick={()=>{setEnabled(true)}}>Enable Voice Filling</button>
-		{props.children}
-	</div>
-	)
+		React.createElement("div",{},[
+			React.createElement("button",{onClick:()=>{setEnabled(true)}},"Enable Voice Filling"),
+			props.children
+		]))
 }
 
 const listenToSpeechAndReturnText = () => new Promise((resolve,reject)=>{
