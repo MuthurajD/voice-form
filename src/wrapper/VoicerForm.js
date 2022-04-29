@@ -18,15 +18,25 @@ export default function VoiceForm(props) {
 	const [currentNodesResolvedCount,setNodesResolvedCount] = useState(0)
 	const [voice,setVoice] = useState(false)
 	const [enabled,setEnabled] = useState(false)
+	const [error,setError] = useState(false)
 
 	if(!voice){
 		speechSynthesis.onvoiceschanged = e=>{
-			setVoice(speechSynthesis.getVoices()[49])
+			setVoice(speechSynthesis.getVoices()[0])
 		}
 	}
 
+	const handleSpeechRecognition = (onChange)=>{
+		listenToSpeechAndReturnText().then(
+			result => {
+				onChange(result)
+				setNodesResolvedCount(count=>count+1)
+			}
+		)
+	} 
+
 	useEffect(() => {
-		if(!enabled || voice===null || voice===undefined) return
+		if(error || !enabled || voice===null || voice===undefined) return
 
 		let node = getNthFormElement(props.children,currentNodesResolvedCount)
 
@@ -40,14 +50,11 @@ export default function VoiceForm(props) {
 			utterence.voice = voice
 			utterence.lang = voice.lang
 			utterence.voiceURI = voice.voiceURI
-			utterence.onend = ()=>{setNodesResolvedCount(count=>count+1)}
+			utterence.onend = ()=>{handleSpeechRecognition(node.props.onChange)}
 
-			console.log(utterence)
 			speechSynthesis.speak(utterence);
 		}
 	},[currentNodesResolvedCount,enabled]);
-
-	console.log(voice)
 
 	return (
 	<div>
@@ -56,6 +63,12 @@ export default function VoiceForm(props) {
 	</div>
 	)
 }
+
+const listenToSpeechAndReturnText = () => new Promise((resolve,reject)=>{
+	const speechRecognizer = new window.webkitSpeechRecognition();
+	speechRecognizer.onresult = (e)=>resolve(e.results[0][0].transcript)
+	speechRecognizer.start()
+})
 
 
 function getNthFormElement(root,n) {
@@ -76,9 +89,4 @@ function getNthFormElement(root,n) {
 		}
 		else stack.push(node.props.children)
 	}
-}
-
-function fillElement(root) {
-	const { onChange } = root.props;
-	return onChange(prompt());
 }
