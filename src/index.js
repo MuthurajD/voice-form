@@ -1,3 +1,3 @@
-import VoiceForm  from "./wrapper/VoicerForm";
+import VoiceForm  from "./wrapper/VoiceForm";
 
 export default VoiceForm
