@@ -1,6 +1,6 @@
 {
   "name": "voice-form",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Voice and Speech Recognition Adapter for React-Forms",
   "main": "src/index.js",
   "dependencies": {
