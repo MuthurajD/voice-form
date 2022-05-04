@@ -4,6 +4,8 @@ const formObject = React.createElement('form');
 const inputObject = React.createElement('input');
 
 export default function VoiceForm(props) {
+	if(!('speechSynthesis' in window) || !('webkitSpeechRecognition' in window))
+	    throw new Error("Sorry there is not Browser support for speechRecognition try upgrading your browser or switch to other.")
 	if (props === null)
 		throw new Error('No child roots detected inside VoiceForm Component');
 	if (Array.isArray(props.children))
@@ -14,15 +16,19 @@ export default function VoiceForm(props) {
 		throw new Error(
 			`React form element must be the element that shoud wrapped by VoiceForm Element found ${props.children.type}`
 		);
+	if(props.autoSubmit && (typeof(props.children.props.onSubmit)!=="function"))
+	    throw new Error(
+			`Enabling autoSubmit expects onSubmit prop of type function but Received ${typeof(props.children.onSubmit)}`
+		) 
 
 	const [currentNodesResolvedCount,setNodesResolvedCount] = useState(0)
 	const [voice,setVoice] = useState(false)
 	const [enabled,setEnabled] = useState(false)
-	const [error,setError] = useState(false)
+	const [isSubmitted,setIsSubmitted] = useState(false)
 
 	if(!voice){
 		speechSynthesis.onvoiceschanged = e=>{
-			setVoice(speechSynthesis.getVoices()[0])
+			setVoice(speechSynthesis.getVoices()[0] || null)
 		}
 	}
 
@@ -36,29 +42,37 @@ export default function VoiceForm(props) {
 	} 
 
 	useEffect(() => {
-		if(error || !enabled || voice===null || voice===undefined) return
+		if(!enabled || voice===null || voice===undefined) return
 
 		let node = getNthFormElement(props.children,currentNodesResolvedCount)
 
 		if (node!=null && node!=undefined){
 			let utterence = new SpeechSynthesisUtterance()
 
-			utterence.text = node.props.speak
+			const {speak,onChange} = node.props
+			if (typeof(speak)!=="string") throw new Error(`Expected speak prop to be string received type ${typeof(speak)}`)
+			if(typeof(onChange)!=="function") throw new Error(`Expected onChange prop to be string received type ${typeof(onChange)}`)
+
+			utterence.text = speak
 			utterence.volume = 0.5
 			utterence.pitch = 1
 			utterence.rate = 1
-			utterence.voice = voice
-			utterence.lang = voice.lang
-			utterence.voiceURI = voice.voiceURI
-			utterence.onend = ()=>{handleSpeechRecognition(node.props.onChange)}
+			utterence.voice = voice || null
+			utterence.lang = voice?.lang
+			utterence.voiceURI = voice?.voiceURI
+			utterence.onend = ()=>{handleSpeechRecognition(onChange)}
 
 			speechSynthesis.speak(utterence);
+		}
+		else{
+			if (props.autoSubmit && !isSubmitted) props.children.props.onSubmit()
+			setIsSubmitted(true)
 		}
 	},[currentNodesResolvedCount,enabled]);
 
 	return (
 		React.createElement("div",{},[
-			React.createElement("button",{onClick:()=>{setEnabled(true)}},"Enable Voice Filling"),
+			React.createElement("button",{onClick:()=>{setEnabled(true)},style:{...props?.buttonStyles}},"Enable Voice Filling"),
 			props.children
 		]))
 }
