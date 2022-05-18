@@ -13,7 +13,7 @@ To install the package `npm i voice-form --save`
 
 Example code
 ```import { useState } from "react";
-import VoiceForm from "./VoiceForm";
+import VoiceForm from "voice-form";
 
 export default function App(){
     const [name,setName] = useState("")
